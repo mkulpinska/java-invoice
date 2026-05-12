@@ -8,10 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import pl.edu.agh.mwo.invoice.Invoice;
-import pl.edu.agh.mwo.invoice.product.DairyProduct;
-import pl.edu.agh.mwo.invoice.product.OtherProduct;
-import pl.edu.agh.mwo.invoice.product.Product;
-import pl.edu.agh.mwo.invoice.product.TaxFreeProduct;
+import pl.edu.agh.mwo.invoice.product.*;
 
 public class InvoiceTest {
     private Invoice invoice;
@@ -125,4 +122,138 @@ public class InvoiceTest {
     public void testAddingNullProduct() {
         invoice.addProduct(null);
     }
+
+    @Test
+    public void testInvoiceTextContainsInvoiceNumber() {
+        String text = invoice.getInvoiceText();
+        Assert.assertTrue(text.startsWith("Faktura nr: "));
+    }
+
+    @Test
+    public void testInvoiceTextListsAllProducts() {
+        invoice.addProduct(new TaxFreeProduct("Chleb", new BigDecimal("5")), 2);
+        invoice.addProduct(new DairyProduct("Ser", new BigDecimal("10")), 3);
+
+        String text = invoice.getInvoiceText();
+
+        Assert.assertTrue(text.contains("Chleb, 2 szt., 5"));
+        Assert.assertTrue(text.contains("Ser, 3 szt., 10"));
+    }
+
+    @Test
+    public void testInvoiceTextEndsWithProductCount() {
+        invoice.addProduct(new TaxFreeProduct("Chleb", new BigDecimal("5")), 2);
+        invoice.addProduct(new DairyProduct("Ser", new BigDecimal("10")), 3);
+
+        String text = invoice.getInvoiceText();
+
+        Assert.assertTrue(text.trim().endsWith("Liczba pozycji: 2"));
+    }
+
+    @Test
+    public void testInvoiceTextForEmptyInvoice() {
+        String text = invoice.getInvoiceText();
+
+        Assert.assertTrue(text.contains("Faktura nr: "));
+        Assert.assertTrue(text.contains("Liczba pozycji: 0"));
+    }
+
+    @Test
+    public void testAddingSameProductTwiceIncreasesQuantity() {
+        Product p = new TaxFreeProduct("Jablko", new BigDecimal("2"));
+
+        invoice.addProduct(p, 3);
+        invoice.addProduct(p, 2);
+
+        Assert.assertThat(invoice.getNetTotal(), Matchers.comparesEqualTo(new BigDecimal("10")));
+    }
+
+    @Test
+    public void testBottleOfWinePriceWithTaxIncludesExcise() {
+        Product wine = new BottleOfWine("Merlot", new BigDecimal("20"));
+        Assert.assertThat(
+                wine.getPriceWithTax(),
+                Matchers.comparesEqualTo(new BigDecimal("30.16"))
+        );
+    }
+
+    @Test
+    public void testFuelCanisterPriceWithTaxIncludesExcise() {
+        Product fuel = new FuelCanister("Benzyna", new BigDecimal("10"));
+        Assert.assertThat(
+                fuel.getPriceWithTax(),
+                Matchers.comparesEqualTo(new BigDecimal("17.86"))
+        );
+    }
+
+    @Test
+    public void testInvoiceWithExciseProducts() {
+        invoice.addProduct(new BottleOfWine("Merlot", new BigDecimal("20")));
+        invoice.addProduct(new FuelCanister("Benzyna", new BigDecimal("10")));
+
+        Assert.assertThat(
+                invoice.getGrossTotal(),
+                Matchers.comparesEqualTo(new BigDecimal("48.02"))
+        );
+    }
+    @Test
+    public void testBottleOfWineHasCorrectPriceWithTaxAndExcise() {
+        Product wine = new BottleOfWine("Merlot", new BigDecimal("20.00"));
+
+        Assert.assertThat(
+                wine.getPriceWithTax(),
+                Matchers.comparesEqualTo(new BigDecimal("30.16"))
+        );
+    }
+
+    @Test
+    public void testBottleOfWineNetPriceIsCorrect() {
+        Product wine = new BottleOfWine("Merlot", new BigDecimal("20.00"));
+        Assert.assertThat(
+                wine.getPrice(),
+                Matchers.comparesEqualTo(new BigDecimal("20.00"))
+        );
+    }
+
+    @Test
+    public void testBottleOfWineTaxPercentIsCorrect() {
+        Product wine = new BottleOfWine("Merlot", new BigDecimal("20.00"));
+        Assert.assertThat(
+                wine.getTaxPercent(),
+                Matchers.comparesEqualTo(new BigDecimal("0.23"))
+        );
+    }
+
+    @Test
+    public void testFuelCanisterHasCorrectPriceWithTaxAndExcise() {
+        Product fuel = new FuelCanister("Benzyna", new BigDecimal("10.00"));
+
+        Assert.assertThat(
+                fuel.getPriceWithTax(),
+                Matchers.comparesEqualTo(new BigDecimal("17.86"))
+        );
+    }
+
+    @Test
+    public void testFuelCanisterNetPriceIsCorrect() {
+        Product fuel = new FuelCanister("Benzyna", new BigDecimal("10.00"));
+        Assert.assertThat(
+                fuel.getPrice(),
+                Matchers.comparesEqualTo(new BigDecimal("10.00"))
+        );
+    }
+
+    @Test
+    public void testFuelCanisterTaxPercentIsCorrect() {
+        Product fuel = new FuelCanister("Benzyna", new BigDecimal("10.00"));
+        Assert.assertThat(
+                fuel.getTaxPercent(),
+                Matchers.comparesEqualTo(new BigDecimal("0.23"))
+        );
+    }
+
+
+
 }
+
+

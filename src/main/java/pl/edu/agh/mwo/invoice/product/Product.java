@@ -34,4 +34,25 @@ public abstract class Product {
     public BigDecimal getPriceWithTax() {
         return price.multiply(taxPercent).add(price);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Product)) return false;
+
+        Product product = (Product) o;
+
+        return name.equals(product.name)
+                && price.equals(product.price)
+                && taxPercent.equals(product.taxPercent);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + price.hashCode();
+        result = 31 * result + taxPercent.hashCode();
+        return result;
+    }
+
 }
