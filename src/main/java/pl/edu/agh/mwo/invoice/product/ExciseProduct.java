@@ -10,6 +10,7 @@ public abstract class ExciseProduct extends Product {
         super(name, price, taxPercent);
     }
 
+
     @Override
     public BigDecimal getPriceWithTax() {
         return super.getPriceWithTax().add(EXCISE);

@@ -33,6 +33,7 @@ public class Invoice {
         products.put(product, newQuantity);
     }
 
+
     public BigDecimal getNetTotal() {
         BigDecimal totalNet = BigDecimal.ZERO;
         for (Product product : products.keySet()) {

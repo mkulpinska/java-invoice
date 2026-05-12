@@ -19,6 +19,7 @@ public abstract class Product {
         this.taxPercent = tax;
     }
 
+
     public String getName() {
         return name;
     }
